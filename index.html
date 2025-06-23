@@ -1,0 +1,87 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title> ToDo List App</title>
+</head>
+
+<body>
+
+    <h1> ToDo List</h1>
+    <input type="text" id ="taskInput" placeholder="Neue Aufgabe">
+    <button onclick="addTask()">Hinzufügen</button>
+
+<ul id="taskList"></ul>
+
+
+<script type="module">
+
+    import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, deleteDoc} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
+// Import the functions you need from the SDKs you need
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyBx99Y-bZaikknSxH7WquWnKxw-8Cekutg",
+  authDomain: "todo-list-app-5153d.firebaseapp.com",
+  projectId: "todo-list-app-5153d",
+  storageBucket: "todo-list-app-5153d.firebasestorage.app",
+  messagingSenderId: "336644802424",
+  appId: "1:336644802424:web:f298042611f4fb662b6a8d"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const tasksRef = collection(db, "tasks");
+
+
+//Neue Aufgabe hinzufügen
+window.addTask = async function() {
+    const input = document.getElementById("taskInput");
+    if(input.value.trim() != ""){ // Nur speichern wenn was eingegeben wurde
+        await addDoc(tasksRef, { text: input.value, done: false});
+        input.value = ""; 
+    }
+};
+
+//Aufgabenliste aktuell halten (Realtime)
+
+onSnapshot(tasksRef, (snapshot) => {
+    const list = document.getElementById("taskList");
+    list.innerHTML ="";     // Liste leeren
+
+
+    //Alle Aufgaben durchgehen und Anzeigen
+
+    snapshot.forEach(doc =>{
+        const li = document.createElement("li");
+        li.textContent = doc.data().text + " ";   // Nur den Text anzeigen
+
+        //Löschen-Button erstellen
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "🗑️";
+        deleteBtn.style.marginLeft = "10px";
+
+        deleteBtn.onclick = async () => {
+            await deleteDoc(doc.ref);
+        };
+
+        li.appendChild(deleteBtn); // Button hinzufügen
+        list.appendChild(li);   //Liste erweitern
+    });
+});
+
+
+    </script>
+
+</body>
+
+</html>
